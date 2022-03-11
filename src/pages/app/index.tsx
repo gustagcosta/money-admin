@@ -1,169 +1,62 @@
 import { Post } from "@prisma/client";
-import { FormEvent, useEffect, useState } from "react";
-import Navbar from "../../components/Navbar";
+import { GetServerSideProps } from "next";
+import { Router, useRouter } from "next/router";
+import Layout from "../../components/Layout";
+import { prisma } from "../../lib/prisma";
 
-type RequestData = {
-  id?: string;
-  title: string;
-  content: string;
+type PostsPageProps = {
+  posts: Post[];
 };
 
-export default function IndexPage () {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [id, setId] = useState("");
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+export const getServerSideProps: GetServerSideProps = async () => {
+  const posts = await prisma.post.findMany();
 
-  useEffect(() => {
-    getAllPosts();
-  }, []);
-
-  async function getAllPosts() {
-    const response = await fetch("http://localhost:3000/api/posts");
-    const posts = await response.json();
-    setPosts(posts);
-  }
-
-  async function handleSavePost(event: FormEvent) {
-    event.preventDefault();
-
-    let data: RequestData = {
-      content,
-      title
+  const data = posts.map((post) => {
+    return {
+      id: post.id,
+      content: post.content,
+      title: post.title,
+      createdAt: post.createdAt.toISOString(),
+      updatedAt: post.updatedAt.toISOString()
     };
+  });
 
-    let method = "POST";
-
-    if (id) {
-      method = "PUT";
-      data.id = id;
+  return {
+    props: {
+      posts: data
     }
+  };
+};
 
-    await fetch("http://localhost:3000/api/posts", {
-      method,
-      body: JSON.stringify(data),
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
-
-    getAllPosts();
-    setContent("");
-    setTitle("");
-    setId("");
-  }
-
-  function handlePrepareEdit(post: Post) {
-    setContent(post.content);
-    setTitle(post.title);
-    setId(post.id);
-  }
-
-  async function handleDelete() {
-    await fetch("http://localhost:3000/api/posts", {
-      method: "DELETE",
-      body: JSON.stringify({ id }),
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
-
-    getAllPosts();
-    setContent("");
-    setTitle("");
-    setId("");
-  }
-
-  function clearState() {
-    setContent("");
-    setTitle("");
-    setId("");
-  }
+export default function PostPage({ posts }: PostsPageProps) {
+  const router = useRouter();
 
   return (
     <>
-      <Navbar />
-      <main>
-        <div className="container">
-          <form onSubmit={handleSavePost}>
-            <div className="row mt-3">
-              <div className="mb-3">
-                <label htmlFor="title" className="form-label">
-                  Título
-                </label>
-                <input
-                  type="text"
-                  id="title"
-                  className="form-control"
-                  required
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Digite o título"
-                />
-              </div>
-              <div className="mb-3">
-                <label htmlFor="content" className="form-label">
-                  Conteúdo
-                </label>
-                <textarea
-                  id="content"
-                  className="form-control"
-                  required
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder="Digite a sua história"
-                />
-              </div>
-              <div className="mb-3">
-                <button type="submit" className="btn btn-primary">
-                  {id ? "Editar" : "Criar"}
-                </button>
-                &nbsp;&nbsp;&nbsp;
-                {id && (
-                  <>
-                    <div
-                      style={{ cursor: "pointer" }}
-                      onClick={handleDelete}
-                      className="btn btn-danger">
-                      Deletar
-                    </div>
-                    &nbsp;&nbsp;&nbsp;
-                    <div
-                      style={{ cursor: "pointer" }}
-                      onClick={clearState}
-                      className="btn btn-secondary">
-                      Cancelar
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </form>
-          <div>
-            <div className="list-group">
-              {posts.map((p) => {
-                const createdAt = new Date(p.createdAt).toLocaleDateString();
-                const updatedAt = new Date(p.updatedAt).toLocaleDateString();
-                return (
-                  <div
-                    key={p.id}
-                    className="list-group-item flex-column align-items-start"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => handlePrepareEdit(p)}>
-                    <div className="d-flex w-100 justify-content-between">
-                      <h5 className="mb-1">{p.title}</h5>
-                      <small>
-                        Criado em: {createdAt} - Atualizado em: {updatedAt}
-                      </small>
-                    </div>
-                    <p className="mb-1">{p.content}</p>
+      <Layout title="Posts">
+        <div className="container-fluid mt-2">
+          <div className="list-group">
+            {posts.map((p) => {
+              const createdAt = new Date(p.createdAt).toLocaleDateString();
+              const updatedAt = new Date(p.updatedAt).toLocaleDateString();
+              return (
+                <div
+                  key={p.id}
+                  className="list-group-item flex-column align-items-start"
+                  onClick={() => router.push(`/app/posts/${p.id}`)}
+                  style={{ cursor: "pointer" }}>
+                  <div className="d-flex w-100 justify-content-between">
+                    <h5 className="mb-1">{p.title}</h5>
+                    <small>
+                      Criado em: {createdAt} - Atualizado em: {updatedAt}
+                    </small>
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              );
+            })}
           </div>
         </div>
-      </main>
+      </Layout>
     </>
   );
 }
