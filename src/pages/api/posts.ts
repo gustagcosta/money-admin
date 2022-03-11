@@ -2,18 +2,35 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../lib/prisma";
 
 export default async function (req: NextApiRequest, res: NextApiResponse) {
-  switch (req.method) {
-    case "POST":
-      const { title, content } = req.body;
+  if (req.method === "POST") {
+    const { title, content } = req.body;
 
-      await prisma.post.create({ data: { content, title } });
+    await prisma.post.create({ data: { content, title } });
 
-      return res.status(201).json({});
-    case "GET":
-      const posts = await prisma.post.findMany();
-
-      return res.status(200).json(posts);
-    default:
-      return res.status(404).json({});
+    return res.status(201).json({});
   }
+
+  if (req.method === "GET") {
+    const posts = await prisma.post.findMany();
+
+    return res.status(200).json(posts);
+  }
+
+  if (req.method === "PUT") {
+    const { id, title, content } = req.body;
+
+    await prisma.post.update({ data: { title, content }, where: { id } });
+
+    return res.status(200).json({});
+  }
+
+  if (req.method === "DELETE") {
+    const { id } = req.body;
+
+    await prisma.post.delete({ where: { id } });
+
+    return res.status(200).json({});
+  }
+
+  return res.status(404).json({});
 }

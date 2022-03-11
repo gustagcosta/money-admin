@@ -1,16 +1,18 @@
 import { Post } from "@prisma/client";
-import { GetServerSideProps } from "next";
-import { signOut } from "next-auth/react";
-import { useRouter } from "next/router";
 import { FormEvent, useEffect, useState } from "react";
-import { prisma } from "../../lib/prisma";
+import Navbar from "../../components/Navbar";
 
-export default function App() {
+type RequestData = {
+  id?: string;
+  title: string;
+  content: string;
+};
+
+export default function IndexPage () {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [id, setId] = useState("");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-
-  const router = useRouter();
 
   useEffect(() => {
     getAllPosts();
@@ -22,18 +24,24 @@ export default function App() {
     setPosts(posts);
   }
 
-  async function handleSignOut() {
-    const data = await signOut({ redirect: false, callbackUrl: "/" });
-
-    router.push(data.url);
-  }
-
   async function handleSavePost(event: FormEvent) {
     event.preventDefault();
 
+    let data: RequestData = {
+      content,
+      title
+    };
+
+    let method = "POST";
+
+    if (id) {
+      method = "PUT";
+      data.id = id;
+    }
+
     await fetch("http://localhost:3000/api/posts", {
-      method: "POST",
-      body: JSON.stringify({ title, content }),
+      method,
+      body: JSON.stringify(data),
       headers: {
         "Content-Type": "application/json"
       }
@@ -42,34 +50,39 @@ export default function App() {
     getAllPosts();
     setContent("");
     setTitle("");
+    setId("");
+  }
+
+  function handlePrepareEdit(post: Post) {
+    setContent(post.content);
+    setTitle(post.title);
+    setId(post.id);
+  }
+
+  async function handleDelete() {
+    await fetch("http://localhost:3000/api/posts", {
+      method: "DELETE",
+      body: JSON.stringify({ id }),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+    getAllPosts();
+    setContent("");
+    setTitle("");
+    setId("");
+  }
+
+  function clearState() {
+    setContent("");
+    setTitle("");
+    setId("");
   }
 
   return (
     <>
-      <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div className="container-fluid">
-          <a className="navbar-brand" href="#">
-            MVP NEXT JS PRISMA
-          </a>
-          <div className="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-              <li className="nav-item">
-                <a className="nav-link" aria-current="page" href="#">
-                  Home
-                </a>
-              </li>
-              <li className="nav-item">
-                <span
-                  className="nav-link cursor-pointer"
-                  style={{ cursor: "pointer" }}
-                  onClick={handleSignOut}>
-                  Logout
-                </span>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
       <main>
         <div className="container">
           <form onSubmit={handleSavePost}>
@@ -82,6 +95,7 @@ export default function App() {
                   type="text"
                   id="title"
                   className="form-control"
+                  required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Digite o título"
@@ -94,6 +108,7 @@ export default function App() {
                 <textarea
                   id="content"
                   className="form-control"
+                  required
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="Digite a sua história"
@@ -101,27 +116,50 @@ export default function App() {
               </div>
               <div className="mb-3">
                 <button type="submit" className="btn btn-primary">
-                  Enviar
+                  {id ? "Editar" : "Criar"}
                 </button>
+                &nbsp;&nbsp;&nbsp;
+                {id && (
+                  <>
+                    <div
+                      style={{ cursor: "pointer" }}
+                      onClick={handleDelete}
+                      className="btn btn-danger">
+                      Deletar
+                    </div>
+                    &nbsp;&nbsp;&nbsp;
+                    <div
+                      style={{ cursor: "pointer" }}
+                      onClick={clearState}
+                      className="btn btn-secondary">
+                      Cancelar
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </form>
           <div>
             <div className="list-group">
-              {posts.map((p) => (
-                <div
-                  key={p.id}
-                  className="list-group-item flex-column align-items-start">
-                  <div className="d-flex w-100 justify-content-between">
-                    <h5 className="mb-1">{p.title}</h5>
-                    <small>
-                      Criado em: {new Date(p.createdAt).toLocaleDateString()} /{" "}
-                      Atualizado em: {new Date(p.updatedAt).toLocaleString()}
-                    </small>
+              {posts.map((p) => {
+                const createdAt = new Date(p.createdAt).toLocaleDateString();
+                const updatedAt = new Date(p.updatedAt).toLocaleDateString();
+                return (
+                  <div
+                    key={p.id}
+                    className="list-group-item flex-column align-items-start"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => handlePrepareEdit(p)}>
+                    <div className="d-flex w-100 justify-content-between">
+                      <h5 className="mb-1">{p.title}</h5>
+                      <small>
+                        Criado em: {createdAt} - Atualizado em: {updatedAt}
+                      </small>
+                    </div>
+                    <p className="mb-1">{p.content}</p>
                   </div>
-                  <p className="mb-1">{p.content}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
