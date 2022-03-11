@@ -12,16 +12,6 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
     case "GET":
       const posts = await prisma.post.findMany();
 
-      // const data = posts.map((p) => {
-      //   return {
-      //     id: p.id,
-      //     title: p.title,
-      //     content: p.content,
-      //     createdAt: p.createdAt.toISOString(),
-      //     updatedAt: p.updatedAt.toISOString()
-      //   };
-      // });
-
       return res.status(200).json(posts);
     default:
       return res.status(404).json({});
