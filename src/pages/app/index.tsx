@@ -1,5 +1,6 @@
 import { Post } from "@prisma/client";
 import { GetServerSideProps } from "next";
+import Link from "next/link";
 import { Router, useRouter } from "next/router";
 import Layout from "../../components/Layout";
 import { prisma } from "../../lib/prisma";
@@ -34,7 +35,7 @@ export default function PostPage({ posts }: PostsPageProps) {
   return (
     <>
       <Layout title="Posts">
-        <div className="container-fluid mt-2">
+        <div>
           <div className="list-group">
             {posts.map((p) => {
               const createdAt = new Date(p.createdAt).toLocaleDateString();
@@ -42,14 +43,20 @@ export default function PostPage({ posts }: PostsPageProps) {
               return (
                 <div
                   key={p.id}
-                  className="list-group-item flex-column align-items-start"
-                  onClick={() => router.push(`/app/posts/${p.id}`)}
-                  style={{ cursor: "pointer" }}>
+                  className="list-group-item flex-column align-items-start">
                   <div className="d-flex w-100 justify-content-between">
                     <h5 className="mb-1">{p.title}</h5>
                     <small>
                       Criado em: {createdAt} - Atualizado em: {updatedAt}
                     </small>
+                  </div>
+                  <div>
+                    <p>
+                      {p.content.substring(0, 100)}... &nbsp;
+                      <Link href={`/app/posts/${p.id}`}>
+                        <a className="link-primary">Ler mais</a>
+                      </Link>
+                    </p>
                   </div>
                 </div>
               );

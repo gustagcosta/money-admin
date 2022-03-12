@@ -2,9 +2,9 @@ import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { FormEvent, useState } from "react";
-import Layout from "../../../components/Layout";
-import ErrorLayout from "../../../components/ErrorLayout";
-import { prisma } from "../../../lib/prisma";
+import Layout from "../../../../components/Layout";
+import ErrorLayout from "../../../../components/ErrorLayout";
+import { prisma } from "../../../../lib/prisma";
 
 type RequestData = {
   id?: string;
@@ -16,8 +16,6 @@ type PostWithoutDates = {
   id: string;
   content: string;
   title: string;
-  createdAt: string;
-  updatedAt: string;
 };
 
 type IndexPageProps = {
@@ -43,9 +41,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
       post: {
         id: post.id,
         title: post.title,
-        content: post.content,
-        createdAt: post.createdAt.toISOString(),
-        updatedAt: post.updatedAt.toISOString()
+        content: post.content
       },
       notfound: false
     }
@@ -108,17 +104,54 @@ export default function IndexPage({ post, notfound }: IndexPageProps) {
   return (
     <>
       <Layout title="Post Update">
-        <div className="container card">
-          <h1 className="text-center">{post.title}</h1>
-          <div>Criado em: {new Date(post.createdAt).toLocaleDateString()}</div>
-          <div>Editado em: {new Date(post.createdAt).toLocaleDateString()}</div>
-          <br />
-          <p>{post.content}</p>
-          <div>
-            <Link href={`/app/posts/edit/${post.id}`}>
-              <a className="btn btn-primary mb-3">Atualizar</a>
-            </Link>
-          </div>
+        <div>
+          <form onSubmit={handleSavePost}>
+            <div className="row mt-3">
+              <div className="mb-3">
+                <label htmlFor="title" className="form-label">
+                  Título
+                </label>
+                <input
+                  type="text"
+                  id="title"
+                  className="form-control"
+                  required
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Digite o título"
+                />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="content" className="form-label">
+                  Conteúdo
+                </label>
+                <textarea
+                  id="content"
+                  className="form-control"
+                  required
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="Digite a sua história"
+                />
+              </div>
+              <div className="mb-3">
+                <button type="submit" className="btn btn-primary">
+                  Editar
+                </button>
+                &nbsp;&nbsp;&nbsp;
+                <div
+                  style={{ cursor: "pointer" }}
+                  onClick={handleDelete}
+                  className="btn btn-danger">
+                  Deletar
+                </div>
+                &nbsp;&nbsp;&nbsp;
+                <Link href={`/app/posts/${post.id}`}>
+                  <a className="btn btn-secondary">Voltar</a>
+                </Link>
+              </div>
+            </div>
+          </form>
         </div>
       </Layout>
     </>

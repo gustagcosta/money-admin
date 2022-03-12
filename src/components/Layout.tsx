@@ -3,6 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { ReactNode } from "react";
+import LoadingLayout from "./LoadingLayout";
 
 type Props = {
   children?: ReactNode;
@@ -10,44 +11,14 @@ type Props = {
 };
 
 export default function Layout({ children, title }: Props) {
-  const router = useRouter();
-
   const { data: session, status } = useSession();
 
   async function handleSignOut() {
-    const data = await signOut({ redirect: false, callbackUrl: "/" });
-
-    await router.push(data.url);
+    signOut({ redirect: true, callbackUrl: "/" });
   }
 
   if (status === "loading") {
-    return (
-      <>
-        <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
-          <div className="container-fluid">
-            <a className="navbar-brand" href="#">
-              <img
-                src={"/profile.png"}
-                width="48"
-                height="48"
-                style={{ borderRadius: "5px", border: "1px solid white" }}
-              />
-            </a>
-          </div>
-        </nav>
-        <main>
-          <div className="text-center mt-4">
-            <h4>Application is loading...</h4>
-            <img
-              src="/loading.gif"
-              width={128}
-              height={128}
-              alt="loading icon"
-            />
-          </div>
-        </main>
-      </>
-    );
+    return <LoadingLayout />;
   }
 
   return (
@@ -59,7 +30,7 @@ export default function Layout({ children, title }: Props) {
       </Head>
       <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
         <div className="container-fluid">
-          <a className="navbar-brand" href="#">
+          <span className="navbar-brand">
             <img
               src={session.user.image}
               alt={session.user.name}
@@ -67,7 +38,7 @@ export default function Layout({ children, title }: Props) {
               height="48"
               style={{ borderRadius: "5px", border: "1px solid white" }}
             />
-          </a>
+          </span>
           <div className="collapse navbar-collapse">
             <ul className="navbar-nav">
               <li className="nav-item">
@@ -84,7 +55,7 @@ export default function Layout({ children, title }: Props) {
               </li>
               <li className="nav-item">
                 <Link href="/app/posts/create">
-                  <a className="nav-link">New post</a>
+                  <a className="nav-link">New Post</a>
                 </Link>
               </li>
               <li className="nav-item">
@@ -99,7 +70,7 @@ export default function Layout({ children, title }: Props) {
           </div>
         </div>
       </nav>
-      <main>{children}</main>
+      <main className="container-fluid mt-2">{children}</main>
     </>
   );
 }

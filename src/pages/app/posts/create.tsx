@@ -53,7 +53,7 @@ export default function IndexPage() {
   return (
     <>
       <Layout title="New Post">
-        <div className="container">
+        <div>
           <form onSubmit={handleSavePost}>
             <div className="row mt-3">
               <div className="mb-3">
