@@ -9,7 +9,7 @@ type RequestData = {
   content: string;
 };
 
-export default function IndexPage() {
+export default function CreatePage() {
   const [id, setId] = useState("");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");

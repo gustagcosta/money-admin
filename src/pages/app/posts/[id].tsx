@@ -52,57 +52,9 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   };
 };
 
-export default function IndexPage({ post, notfound }: IndexPageProps) {
+export default function PostDetailsPage({ post, notfound }: IndexPageProps) {
   if (notfound) {
     return <ErrorLayout />;
-  }
-
-  const [title, setTitle] = useState(post.title);
-  const [content, setContent] = useState(post.content);
-
-  const router = useRouter();
-  const { id } = router.query;
-
-  async function handleSavePost(event: FormEvent) {
-    event.preventDefault();
-
-    let data: RequestData = {
-      content,
-      title,
-      id: String(id)
-    };
-
-    try {
-      await fetch("http://localhost:3000/api/posts", {
-        method: "PUT",
-        body: JSON.stringify(data),
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
-
-      router.push("/app");
-    } catch (error) {
-      // TODO improve error handler
-      console.log(error);
-    }
-  }
-
-  async function handleDelete() {
-    try {
-      await fetch("http://localhost:3000/api/posts", {
-        method: "DELETE",
-        body: JSON.stringify({ id: String(id) }),
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
-
-      router.push("/app");
-    } catch (error) {
-      // TODO improve error handler
-      console.log(error);
-    }
   }
 
   return (

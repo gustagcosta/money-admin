@@ -1,7 +1,6 @@
 import { Post } from "@prisma/client";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
-import { Router, useRouter } from "next/router";
 import Layout from "../../components/Layout";
 import { prisma } from "../../lib/prisma";
 
@@ -30,8 +29,6 @@ export const getServerSideProps: GetServerSideProps = async () => {
 };
 
 export default function PostPage({ posts }: PostsPageProps) {
-  const router = useRouter();
-
   return (
     <>
       <Layout title="Posts">

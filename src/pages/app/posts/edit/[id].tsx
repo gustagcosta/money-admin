@@ -48,16 +48,16 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   };
 };
 
-export default function IndexPage({ post, notfound }: IndexPageProps) {
-  if (notfound) {
-    return <ErrorLayout />;
-  }
-
+export default function PostUpdatePage({ post, notfound }: IndexPageProps) {
   const [title, setTitle] = useState(post.title);
   const [content, setContent] = useState(post.content);
 
   const router = useRouter();
   const { id } = router.query;
+
+  if (notfound) {
+    return <ErrorLayout />;
+  }
 
   async function handleSavePost(event: FormEvent) {
     event.preventDefault();
