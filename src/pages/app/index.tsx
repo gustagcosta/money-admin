@@ -1,34 +1,54 @@
 import { Post } from "@prisma/client";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
+import ErrorLayout from "../../components/ErrorLayout";
 import Layout from "../../components/Layout";
 import { prisma } from "../../lib/prisma";
 
 type PostsPageProps = {
-  posts: Post[];
+  posts?: Post[];
+  error?: string;
 };
 
 export const getServerSideProps: GetServerSideProps = async () => {
-  const posts = await prisma.post.findMany();
+  try {
+    const posts = await prisma.post.findMany();
 
-  const data = posts.map((post) => {
+    const data = posts.map((post) => {
+      return {
+        id: post.id,
+        content: post.content,
+        title: post.title,
+        createdAt: post.createdAt.toISOString(),
+        updatedAt: post.updatedAt.toISOString()
+      };
+    });
+
     return {
-      id: post.id,
-      content: post.content,
-      title: post.title,
-      createdAt: post.createdAt.toISOString(),
-      updatedAt: post.updatedAt.toISOString()
+      props: {
+        posts: data
+      }
     };
-  });
-
-  return {
-    props: {
-      posts: data
-    }
-  };
+  } catch (error) {
+    return {
+      props: {
+        posts: error
+      }
+    };
+  }
 };
 
-export default function PostPage({ posts }: PostsPageProps) {
+export default function PostPage({ posts, error }: PostsPageProps) {
+  
+  if (error) {
+    console.log(error);
+    return (
+      <>
+        <ErrorLayout />
+      </>
+    );
+  }
+
   return (
     <>
       <Layout title="Posts">
