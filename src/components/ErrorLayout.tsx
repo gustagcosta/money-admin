@@ -11,7 +11,8 @@ export default function ErrorLayout() {
         <div className="text-center mt-4">
           <h3>Error</h3>
           <p>
-            A página que você está procurando não existe ou ocorreu outro erro.
+            A página que você está procurando não existe ou ocorreu algum erro
+            desconhecido.
           </p>
         </div>
       </main>

@@ -14,6 +14,8 @@ export const getServerSideProps: GetServerSideProps = async () => {
   try {
     const posts = await prisma.post.findMany();
 
+    throw new Error("salve");
+
     const data = posts.map((post) => {
       return {
         id: post.id,
@@ -32,14 +34,13 @@ export const getServerSideProps: GetServerSideProps = async () => {
   } catch (error) {
     return {
       props: {
-        posts: error
+        error: error.message
       }
     };
   }
 };
 
 export default function PostPage({ posts, error }: PostsPageProps) {
-  
   if (error) {
     console.log(error);
     return (
